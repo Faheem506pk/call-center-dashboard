@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Call Center Dashboard</title>
+    
+    <!-- Bootstrap 4.7 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <!-- Chart.js for charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            /* Exact colors from React app */
+            --background: 0 0% 100%;
+            --foreground: 215 25% 27%;
+            --card: 0 0% 100%;
+            --card-foreground: 215 25% 27%;
+            --primary: 217 91% 60%;
+            --primary-foreground: 0 0% 100%;
+            --secondary: 210 17% 96%;
+            --secondary-foreground: 215 25% 27%;
+            --muted: 210 17% 96%;
+            --muted-foreground: 215 16% 47%;
+            --accent: 172 66% 50%;
+            --accent-foreground: 0 0% 100%;
+            --border: 210 18% 87%;
+            --success: 142 76% 36%;
+            --success-foreground: 0 0% 100%;
+            --destructive: 0 84% 60%;
+            --destructive-foreground: 0 0% 100%;
+            
+            /* Legacy colors for compatibility */
+            --primary-blue: #4285f4;
+            --primary-blue-light: #5a95f5;
+            --success-green: #10b981;
+            --warning-orange: #f59e0b;
+            --danger-red: #ef4444;
+            --info-cyan: #06b6d4;
+            --purple: #8b5cf6;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+        }
+        
+        body {
+            background-color: #fff;
+            font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+            color: #1f2937;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+        
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        .header-bg {
+            background: white;
+            color: var(--gray-900);
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .card {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+            transform: translateY(-2px);
+        }
+        
+        .stat-card {
+            position: relative;
+            border: none;
+            height: 140px;
+        }
+        
+        .stat-card.blue {
+            background: linear-gradient(180deg, rgba(66, 133, 244, 0.05) 0%, rgba(66, 133, 244, 0.02) 100%);
+        }
+        
+        .stat-card.green {
+            background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+        }
+        
+        .stat-card.orange {
+            background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.02) 100%);
+        }
+        
+        .stat-card.purple {
+            background: linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, rgba(139, 92, 246, 0.02) 100%);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+        }
+        
+        .stat-card.blue::before {
+            background: linear-gradient(90deg, #4285f4 0%, #34a853 100%);
+        }
+        
+        .stat-card.green::before {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        }
+        
+        .stat-card.orange::before {
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
+        
+        .stat-card.purple::before {
+            background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+        
+        .stat-card .card-body {
+            padding: 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 8px 0;
+            line-height: 1;
+        }
+        
+        .stat-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .stat-change {
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .stat-change.positive {
+            color: var(--success-green);
+        }
+        
+        .stat-change.negative {
+            color: var(--danger-red);
+        }
+        
+        .stat-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .stat-icon.blue {
+            background: rgba(66, 133, 244, 0.1);
+            color: var(--primary-blue);
+        }
+        
+        .stat-icon.green {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-green);
+        }
+        
+        .stat-icon.orange {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-orange);
+        }
+        
+        .stat-icon.purple {
+            background: rgba(139, 92, 246, 0.1);
+            color: var(--purple);
+        }
+        
+        .nav-tabs {
+            border-bottom: 1px solid var(--gray-200);
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .nav-tabs .nav-link {
+            border: none;
+            color: hsl(var(--muted-foreground));
+            font-weight: 500;
+            font-size: 0.875rem;
+            padding: 1rem 0.75rem;
+            border-radius: 0;
+            transition: all 0.2s ease;
+            background: transparent;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: hsl(var(--foreground));
+            background-color: transparent;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background-color: transparent;
+            border-bottom: 2px solid hsl(var(--primary));
+            color: hsl(var(--primary));
+            font-weight: 500;
+        }
+        
+        .table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(79, 70, 229, 0.05);
+        }
+        
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .activity-item {
+            padding: 1rem;
+            border-left: 3px solid var(--gray-200);
+            margin-bottom: 0.75rem;
+            background-color: var(--gray-50);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .activity-item:hover {
+            background-color: white;
+            border-left-color: var(--primary-color);
+        }
+        
+        .activity-item.recent {
+            border-left-color: var(--primary-color);
+            background-color: white;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .form-control {
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            padding: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+        
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            border: none;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3730a3 0%, var(--primary-color) 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            background: transparent;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .performance-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        .performance-metric:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-value {
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+        
+        .metric-value.success {
+            color: var(--success-color);
+        }
+        
+        .metric-value.primary {
+            color: var(--primary-color);
+        }
+        
+        .trend-up {
+            color: var(--success-color);
+        }
+        
+        .trend-down {
+            color: var(--danger-color);
+        }
+        
+        .trend-stable {
+            color: var(--warning-color);
+        }
+        
+        /* Update stat card icons */
+        .stat-card .text-primary {
+            color: #3b82f6 !important;
+        }
+        
+        .stat-card .text-success {
+            color: var(--success-color) !important;
+        }
+        
+        .stat-card .text-warning {
+            color: var(--warning-color) !important;
+        }
+        
+        .stat-card .text-info {
+            color: #8b5cf6 !important;
+        }
+        
+        .stat-card .text-danger {
+            color: var(--danger-color) !important;
+        }
+        
+        /* Enhanced card headers */
+        .card-header {
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+            border-radius: 12px 12px 0 0 !important;
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .card-header.bg-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%) !important;
+        }
+        
+        .card-header.bg-info {
+            background: linear-gradient(135deg, var(--info-color) 0%, #0891b2 100%) !important;
+        }
+        
+        .card-header.bg-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%) !important;
+        }
+        
+        /* Table improvements */
+        .thead-light th {
+            background-color: var(--gray-100);
+            border-bottom: 2px solid var(--gray-200);
+            font-weight: 600;
+            color: var(--gray-700);
+            padding: 1rem 0.75rem;
+        }
+        
+        .table td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        
+        /* Input group styling */
+        .input-group-text {
+            background-color: var(--gray-100);
+            border: 1px solid var(--gray-300);
+            border-right: none;
+            color: var(--gray-600);
+        }
+        
+        .input-group .form-control {
+            border-left: none;
+        }
+        
+        .input-group .form-control:focus {
+            border-left: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header-bg py-3 ">
+        <div class="main-container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary rounded p-2 mr-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="mb-0" style="font-size: 1.25rem; font-weight: 700; color: hsl(var(--foreground));">Call Center Dashboard</h1>
+                            <p class="mb-0" style="font-size: 0.875rem; color: hsl(var(--muted-foreground));">Manage calls and cases efficiently</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-right">
+                    <button class="btn btn-light" onclick="showView('new-call')">
+                        <i class="bi bi-plus-circle mr-1"></i>
+                        New Call
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <div class="main-container">
+        <ul class="nav nav-tabs mb-4" id="mainTabs">
+            <li class="nav-item">
+                <a class="nav-link active" href="#" onclick="showView('dashboard')">
+                    <i class="bi bi-bar-chart mr-1"></i>
+                    Dashboard
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view-content">
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card blue">
+                        <div class="stat-icon blue">
+                            <i class="bi bi-telephone-fill"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-title">Total Incoming Calls</div>
+                            <div class="stat-number">1,247</div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-up"></i> +12.5% from yesterday
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card blue">
+                        <div class="stat-icon blue">
+                            <i class="bi bi-telephone-inbound-fill"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-title">Answered Calls</div>
+                            <div class="stat-number">1,089</div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-up"></i> +8.3% from yesterday
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card orange">
+                        <div class="stat-icon orange">
+                            <i class="bi bi-telephone-x-fill"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-title">Canceled Calls</div>
+                            <div class="stat-number">158</div>
+                            <div class="stat-change negative">
+                                <i class="bi bi-arrow-up"></i> +2.1% from yesterday
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card green">
+                        <div class="stat-icon green">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-title">Resolved Cases</div>
+                            <div class="stat-number">856</div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-up"></i> +15.7% from yesterday
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row Stats -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card orange">
+                        <div class="stat-icon orange">
+                            <i class="bi bi-clock-fill"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-title">Pending Cases</div>
+                            <div class="stat-number">142</div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-up"></i> +4.2% from yesterday
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card orange">
+                        <div class="stat-icon orange">
+                            <i class="bi bi-x-circle-fill"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-title">Canceled Cases</div>
+                            <div class="stat-number">91</div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-down"></i> -5.1% from yesterday
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card purple">
+                        <div class="stat-icon purple">
+                            <i class="bi bi-activity"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-title">Total Active Cases</div>
+                            <div class="stat-number">998</div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-up"></i> +18.9% from yesterday
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="card stat-card purple">
+                        <div class="stat-icon purple">
+                            <i class="bi bi-stopwatch-fill"></i>
+                        </div>
+                        <div class="card-body">
+                            <div class="stat-title">Avg Resolution Time</div>
+                            <div class="stat-number">2.4 days</div>
+                            <div class="stat-change positive">
+                                <i class="bi bi-arrow-down"></i> -0.3 days from yesterday
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card card-gradient">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Calls by Caller Type</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="callerTypeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="card card-gradient">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Cases by Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tables and Additional Cards Row -->
+            <div class="row mb-4">
+                <div class="col-lg-6 mb-3">
+                    <div class="card" style="background: #fff">
+                        <div class="card-header d-flex justify-content-between align-items-center" >
+                            <h5 class="card-title mb-0 text-dark">Recent Cases</h5>
+                            <div>
+                                <button class="btn btn-outline-secondary btn-sm mr-1">Export CSV</button>
+                                <button class="btn btn-outline-secondary btn-sm">Export PDF</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    </div>
+                                    <input type="text" class="form-control" placeholder="Search cases..." id="caseSearch">
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Case ID</th>
+                                            <th>Caller Type</th>
+                                            <th>Case Date</th>
+                                            <th>Status</th>
+                                            <th>Issue Category</th>
+                                            <th>Focal Person</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="casesTableBody">
+                                        <tr>
+                                            <td><a href="#" class="text-primary font-weight-bold">CC-2024-001</a></td>
+                                            <td>Beneficiary</td>
+                                            <td>2024-01-15</td>
+                                            <td><span class="badge badge-primary">Open</span></td>
+                                            <td>Service Request</td>
+                                            <td>John Smith</td>
+                                        </tr>
+                                        <tr>
+                                            <td><a href="#" class="text-primary font-weight-bold">CC-2024-002</a></td>
+                                            <td>Community Member</td>
+                                            <td>2024-01-14</td>
+                                            <td><span class="badge badge-success">Closed</span></td>
+                                            <td>Complaint (Non-PSEA)</td>
+                                            <td>Sarah Johnson</td>
+                                        </tr>
+                                        <tr>
+                                            <td><a href="#" class="text-primary font-weight-bold">CC-2024-003</a></td>
+                                            <td>Government Staff</td>
+                                            <td>2024-01-14</td>
+                                            <td><span class="badge badge-warning">Draft</span></td>
+                                            <td>PSEA</td>
+                                            <td>Mike Davis</td>
+                                        </tr>
+                                    
+                                       
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center ">
+                                <small class="text-muted">Showing 5 of 5 cases</small>
+                                <div>
+                                    <button class="btn btn-outline-secondary btn-sm mr-1" disabled>Previous</button>
+                                    <button class="btn btn-outline-secondary btn-sm">Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6 mb-3">
+                    <div class="card" >
+                        <div class="card-header" style="background: transparent; border: none;">
+                            <h5 class="card-title mb-0 text-dark">Cases by Location</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Province</th>
+                                            <th>District</th>
+                                            <th>Total Cases</th>
+                                            <th>Trend</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Central Province</td>
+                                            <td>Kampala</td>
+                                            <td><strong>245</strong></td>
+                                            <td><span class="badge badge-success">↗ Rising</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Western Province</td>
+                                            <td>Mbarara</td>
+                                            <td><strong>178</strong></td>
+                                            <td><span class="badge badge-success">↗ Rising</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Eastern Province</td>
+                                            <td>Jinja</td>
+                                            <td><strong>156</strong></td>
+                                            <td><span class="badge badge-danger">↘ Declining</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Northern Province</td>
+                                            <td>Gulu</td>
+                                            <td><strong>134</strong></td>
+                                            <td><span class="badge badge-success">↗ Rising</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Central Province</td>
+                                            <td>Wakiso</td>
+                                            <td><strong>123</strong></td>
+                                            <td><span class="badge badge-warning">→ Stable</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Western Province</td>
+                                            <td>Kasese</td>
+                                            <td><strong>98</strong></td>
+                                            <td><span class="badge badge-danger">↘ Declining</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Eastern Province</td>
+                                            <td>Mbale</td>
+                                            <td><strong>87</strong></td>
+                                            <td><span class="badge badge-success">↗ Rising</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Northern Province</td>
+                                            <td>Lira</td>
+                                            <td><strong>76</strong></td>
+                                            <td><span class="badge badge-warning">→ Stable</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Cards Row -->
+            <div class="row">
+                <div class="col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-header" style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%); border: none;">
+                            <h5 class="card-title mb-0 text-dark">
+                                <i class="bi bi-people mr-2"></i>
+                                Quick Actions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12 mb-2">
+                                    <button class="btn btn-primary btn-block" onclick="showView('new-call')" style="background: #4285f4; border: none; border-radius: 8px; font-weight: 500; padding: 12px 16px;">
+                                        <i class="bi bi-plus mr-1"></i>
+                                        Log New Call
+                                    </button>
+                                </div>
+                                <div class="col-12 mb-2">
+                                    <button class="btn btn-outline-secondary btn-block" style="border: 1px solid #e2e8f0; color: #64748b; background: transparent; border-radius: 8px; font-weight: 500; padding: 12px 16px;">
+                                        <i class="bi bi-file-text mr-1"></i>
+                                        Generate Report
+                                    </button>
+                                </div>
+                                <div class="col-12 mb-2">
+                                    <button class="btn btn-outline-secondary btn-block" style="border: 1px solid #e2e8f0; color: #64748b; background: transparent; border-radius: 8px; font-weight: 500; padding: 12px 16px;">
+                                        <i class="bi bi-people mr-1"></i>
+                                        Manage Staff
+                                    </button>
+                                </div>
+                                <div class="col-12">
+                                    <button class="btn btn-outline-secondary btn-block" style="border: 1px solid #e2e8f0; color: #64748b; background: transparent; border-radius: 8px; font-weight: 500; padding: 12px 16px;">
+                                        <i class="bi bi-geo-alt mr-1"></i>
+                                        View Map
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-header" style="background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); border: none;">
+                            <h5 class="card-title mb-0 text-dark">Recent Activity</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="font-weight-bold">New call logged</div>
+                                <small class="text-muted">2 min ago - by John Smith</small>
+                            </div>
+                            <div class="mb-3">
+                                <div class="font-weight-bold">Case CC-2024-001 updated</div>
+                                <small class="text-muted">5 min ago - by Sarah Johnson</small>
+                            </div>
+                            <div class="mb-3">
+                                <div class="font-weight-bold">Case closed</div>
+                                <small class="text-muted">15 min ago - by Mike Davis</small>
+                            </div>
+                            <div class="mb-0">
+                                <div class="font-weight-bold">PSEA case escalated</div>
+                                <small class="text-muted">1 hour ago - by Emily Chen</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-header" style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border: none;">
+                            <h5 class="card-title mb-0 text-dark">Performance Metrics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="performance-metric">
+                                <span class="text-muted">Call Answer Rate</span>
+                                <span class="metric-value" style="color: #10b981; font-weight: 700;">94.2%</span>
+                            </div>
+                            <div class="performance-metric">
+                                <span class="text-muted">Avg Wait Time</span>
+                                <span class="metric-value" style="font-weight: 700;">1.8 min</span>
+                            </div>
+                            <div class="performance-metric">
+                                <span class="text-muted">Cases Resolved Today</span>
+                                <span class="metric-value" style="color: #4285f4; font-weight: 700;">67</span>
+                            </div>
+                            <div class="performance-metric">
+                                <span class="text-muted">Customer Satisfaction</span>
+                                <span class="metric-value" style="color: #10b981; font-weight: 700;">4.7/5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Call View -->
+        <div id="new-call-view" class="view-content" style="display: none;">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card card-gradient">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <h4 class="mb-0">New Call Entry</h4>
+                            <div>
+                                <button class="btn btn-outline-light btn-sm mr-1">Export CSV</button>
+                                <button class="btn btn-outline-light btn-sm">Export PDF</button>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <form id="callForm">
+                               
+                          </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Case Details View -->
+        <div id="case-details-view" class="view-content" style="display: none;">
+            
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // View switching functionality
+        function showView(viewName) {
+            // Hide all views
+            document.querySelectorAll('.view-content').forEach(view => {
+                view.style.display = 'none';
+            });
+            
+            // Show selected view
+            document.getElementById(viewName + '-view').style.display = 'block';
+            
+            // Update navigation
+            document.querySelectorAll('#mainTabs .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the correct nav link
+            const activeLink = document.querySelector(`#mainTabs .nav-link[onclick="showView('${viewName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        // Case detail tabs functionality
+        function showCaseTab(tabName) {
+            // Hide all case tab contents
+            document.querySelectorAll('.case-tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Show selected tab content
+            document.getElementById('case-' + tabName + '-tab').style.display = 'block';
+            
+            // Update tab navigation
+            document.querySelectorAll('#caseDetailTabs .nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Find and activate the correct tab link
+            const activeLink = document.querySelector(`#caseDetailTabs .nav-link[onclick="showCaseTab('${tabName}')"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+        }
+
+        // Form submission handler
+        document.getElementById('callForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Call logged successfully!');
+        });
+
+        // Search functionality for cases table
+        document.getElementById('caseSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tableRows = document.querySelectorAll('#casesTableBody tr');
+            
+            tableRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Caller Type Pie Chart
+            const callerTypeCtx = document.getElementById('callerTypeChart').getContext('2d');
+            new Chart(callerTypeCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Beneficiary', 'Community Member', 'Government Staff', 'NGO Staff', 'Caregiver'],
+                    datasets: [{
+                        data: [45, 25, 15, 10, 5],
+                        backgroundColor: [
+                            '#007bff',
+                            '#28a745',
+                            '#ffc107',
+                            '#17a2b8',
+                            '#dc3545'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Status Bar Chart
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Open', 'Closed', 'Draft', 'Pending'],
+                    datasets: [{
+                        label: 'Cases',
+                        data: [142, 856, 91, 67],
+                        backgroundColor: '#007bff',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
